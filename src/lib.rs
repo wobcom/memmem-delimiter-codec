@@ -14,14 +14,14 @@ pub struct MemMemDelimiterCodec<'a> {
 }
 
 #[derive(Debug)]
-pub enum DoubleDelimiterCodecError {
+pub enum MemMemDelimiterCodecError {
     MaxChunkLengthExceeded,
     Io(Error),
 }
 
-impl From<Error> for DoubleDelimiterCodecError {
+impl From<Error> for MemMemDelimiterCodecError {
     fn from(e: Error) -> Self {
-        DoubleDelimiterCodecError::Io(e)
+        MemMemDelimiterCodecError::Io(e)
     }
 }
 
@@ -52,7 +52,7 @@ impl<'a> MemMemDelimiterCodec<'a> {
 
 impl Decoder for MemMemDelimiterCodec<'_> {
     type Item = Bytes;
-    type Error = DoubleDelimiterCodecError;
+    type Error = MemMemDelimiterCodecError;
 
     // implementation details shamelessly stolen from AnyDelimiterCodec
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
@@ -96,7 +96,7 @@ impl Decoder for MemMemDelimiterCodec<'_> {
                     // return error (max length reached) and start discarding on next call
                     self.is_discarding = true;
 
-                    return Err(DoubleDelimiterCodecError::MaxChunkLengthExceeded);
+                    return Err(MemMemDelimiterCodecError::MaxChunkLengthExceeded);
                 }
                 (false, None) => {
                     // no delimiter found but didn't reach length limit
@@ -155,7 +155,7 @@ mod tests {
         reader.next().await.unwrap().unwrap();
         assert_matches!(
             reader.next().await,
-            Some(Err(DoubleDelimiterCodecError::Io(_)))
+            Some(Err(MemMemDelimiterCodecError::Io(_)))
         );
     }
 }
